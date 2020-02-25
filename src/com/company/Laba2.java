@@ -35,8 +35,13 @@ public class Laba2 {
                 f = true;
                 break;
             }
+            while(sum % 100 != 0 && k1 > 0){
+                sum -= n1;
+                a.add(n1);
+                k1--;
+            }
             if(sum >= n4){
-                if(sum - n4 > n1 && k4 > 0) {
+                if(sum - n4 > n1 && k4 > 0 && (sum - n4) % n1 == 0) {
                     sum -= n4;
                     a.add(n4);
                     k4--;
@@ -68,7 +73,11 @@ public class Laba2 {
                     k1--;
                 }
             }else if(sum >= n2 && k2 > 0){
-                if(sum - n2 > n1){
+                if(sum - n2 <= n2 && (sum - n2) % 30 == 0){
+                    sum -= n2;
+                    a.add(n2);
+                    k2--;
+                }else if(sum - n2 >= 120 || sum - n2 == n2){
                     sum -= n2;
                     a.add(n2);
                     k2--;
