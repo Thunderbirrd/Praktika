@@ -1,102 +1,107 @@
 package com.company;
 
-import java.util.ArrayList;
-import java.util.Locale;
-import java.util.Scanner;
+import java.lang.reflect.Array;
+import java.util.*;
 
 public class Laba2 {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in).useLocale(Locale.US);
-        int n1 = 30, n2 = 100, n3 = 500, n4 = 1000;
-        System.out.println("Введите количество купюр каждого номинала через пробел");
-        int k1 = scanner.nextInt(), k2 = scanner.nextInt(), k3 = scanner.nextInt(), k4 = scanner.nextInt();
-        System.out.println("Введите сумму, которую надо выдать");
-        int sum = scanner.nextInt();
-        boolean f = false;
-        ArrayList<Integer> a = new ArrayList<>();
-        while (sum > 0){
-            if(sum == n1){
-                if(k1 > 0) {
-                    a.add(n1);
-                    break;
-                }else{
-                    System.out.println("Невозможно выдать такую сумму");
-                    f = true;
-                    break;
+        String s = scanner.nextLine();
+        s = s.replaceAll("[(]", "( ");
+        s = s.replaceAll("[)]", " )");
+        String[] arr = s.split(" ");
+        Stack<String> symbols = new Stack<>();
+        ArrayList<String> num = new ArrayList<>();
+        String[] pr1 = {"^"}; String[] pr2 = {"*", "/"}; String[] pr3 = {"+", "-"}; String[] sk = {"(", ")"}; int x;
+        ArrayList p1 = new ArrayList<String>(Arrays.asList(pr1));
+        ArrayList p2 = new ArrayList<String>(Arrays.asList(pr2));
+        ArrayList p3 = new ArrayList<String>(Arrays.asList(pr3));
+        ArrayList pl = new ArrayList<String>(Arrays.asList(sk));
+        for (String value : arr) {
+            try{
+                x = Integer.parseInt(value);
+                num.add(value);
+            } catch (NumberFormatException e) {
+                if(symbols.isEmpty()){
+                    symbols.add(value);
                 }
-            }
-            if(sum < 60 || (k1 == 0 && k2 == 0 && k3 == 0 && k4 == 0)){
-                System.out.println("Невозможно выдать такую сумму");
-                f = true;
-                break;
-            }
-            if(n1 * k1 + n2 * k2 + n3 * k3 + n4 * k4 < sum){
-                System.out.println("Невозможно выдать такую сумму");
-                f = true;
-                break;
-            }
-            while(sum % 100 != 0 && k1 > 0){
-                sum -= n1;
-                a.add(n1);
-                k1--;
-            }
-            if(sum >= n4){
-                if(sum - n4 > n1 && k4 > 0 && (sum - n4) % n1 == 0) {
-                    sum -= n4;
-                    a.add(n4);
-                    k4--;
-                }else if(k3 > 0){
-                    sum -= n3;
-                    a.add(n3);
-                    k3--;
-                }else if(k2 > 0){
-                    sum -= n2;
-                    a.add(n2);
-                    k2--;
+                else if(p1.indexOf(value) != -1){
+                    if(symbols.peek().equals("^")){
+                        num.add(value);
+                    }else{
+                        symbols.add(value);
+                    }
+                }else if(p2.indexOf(value) != -1){
+                    if(p2.indexOf(symbols.peek()) != -1 || p1.indexOf(symbols.peek()) != -1){
+                        num.add(symbols.peek());
+                        symbols.pop();
+                        symbols.add(value);
+                    }else{
+                        symbols.add(value);
+                    }
+                }else if(p3.indexOf(value) != -1){
+                    if(pl.indexOf(symbols.peek()) != -1){
+                        symbols.add(value);
+                    }else{
+                        num.add(symbols.peek());
+                        symbols.pop();
+                        symbols.add(value);
+                    }
                 }else{
-                    sum -= n1;
-                    a.add(n1);
-                    k1--;
+                    if(value.equals("(")){
+                        symbols.add(value);
+                    }else{
+                        String last = symbols.peek();
+                        while (!last.equals("(")){
+                            num.add(last);
+                            symbols.pop();
+                            last = symbols.peek();
+                        }
+                        symbols.pop();
+                    }
                 }
-            }else if(sum >= n3 && k3 > 0){
-                if(sum - n3 > n1){
-                    sum -= n3;
-                    a.add(n3);
-                    k3--;
-                }else if(k2 > 0){
-                    sum -= n2;
-                    a.add(n2);
-                    k2--;
-                }else{
-                    sum -= n1;
-                    a.add(n1);
-                    k1--;
-                }
-            }else if(sum >= n2 && k2 > 0){
-                if(sum - n2 <= n2 && (sum - n2) % 30 == 0){
-                    sum -= n2;
-                    a.add(n2);
-                    k2--;
-                }else if(sum - n2 >= 120 || sum - n2 == n2){
-                    sum -= n2;
-                    a.add(n2);
-                    k2--;
-                }else{
-                    sum -= n1;
-                    a.add(n1);
-                    k1--;
-                }
-            }else if(k1 > 0){
-                sum -= n1;
-                a.add(n1);
-                k1--;
             }
         }
-        if(!f){
-            System.out.println("Выданные купюры");
-            for (Integer integer : a) {
-                System.out.print(integer + " ");
+        while (!symbols.isEmpty()) {
+            num.add(symbols.peek());
+            symbols.pop();
+        }
+        System.out.println(num.toString());
+        int i = 0, idx;
+        ArrayList<Integer> ops = new ArrayList<>();
+        for(int j = 0; j < num.size(); j++){
+            if(!num.get(j).matches("-?\\d+")){
+                ops.add(j);
             }
         }
+
+        for(int j : ops){
+            idx = j - 2 * i;
+            String temp = num.get(idx);
+            switch (temp){
+                case "+":
+                    num.set(idx, String.valueOf(Integer.parseInt(num.get(idx - 1)) + Integer.parseInt(num.get(idx - 2))));
+                    num.remove(idx-  1); num.remove(idx - 2);
+                    break;
+                case "-":
+                    num.set(idx, String.valueOf(Integer.parseInt(num.get(idx - 2)) - Integer.parseInt(num.get(idx - 1))));
+                    num.remove(idx-  1); num.remove(idx - 2);
+                    break;
+                case "*":
+                    num.set(idx, String.valueOf(Integer.parseInt(num.get(idx - 1)) * Integer.parseInt(num.get(idx - 2))));
+                    num.remove(idx-  1); num.remove(idx - 2);
+                    break;
+                case "/":
+                    num.set(idx, String.valueOf(Integer.parseInt(num.get(idx - 2)) / Integer.parseInt(num.get(idx - 1))));
+                    num.remove(idx-  1); num.remove(idx - 2);
+                    break;
+                case "^":
+                    num.set(idx, String.valueOf((int)Math.pow(Integer.parseInt(num.get(idx - 2)), Integer.parseInt(num.get(idx - 1)))));
+                    num.remove(idx-  1); num.remove(idx - 2);
+                    break;
+            }
+            i++;
+        }
+        System.out.println(num.get(0));
     }
 }
